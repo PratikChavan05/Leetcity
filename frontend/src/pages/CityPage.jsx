@@ -16,6 +16,7 @@ export default function CityPage() {
   const [searchError, setSearchError] = useState('');
   const [showControls, setShowControls] = useState(true);
   const [activityLog, setActivityLog] = useState([]);
+  const [flyToTarget, setFlyToTarget] = useState(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -39,10 +40,33 @@ export default function CityPage() {
   const handleSearch = async (username) => {
     setLoading(true);
     setSearchError('');
+    setFlyToTarget(null);
+
     try {
       const result = await fetchUser(username);
-      setActivityLog((prev) => [`@${username} joined the city`, ...prev].slice(0, 10));
+      const user = result.user;
+
+      // If user already existed, fly to their building
+      if (result.isExisting) {
+        setActivityLog((prev) => [`📍 Flying to @${username}'s building`, ...prev].slice(0, 10));
+      } else {
+        setActivityLog((prev) => [`@${username} joined the city`, ...prev].slice(0, 10));
+      }
+
       await loadData();
+
+      // Fly camera to the building position
+      if (user.gridPosition) {
+        // Small delay so buildings re-render first
+        setTimeout(() => {
+          setFlyToTarget({
+            x: user.gridPosition.x,
+            y: user.buildingConfig?.height / 2 || 5,
+            z: user.gridPosition.z,
+          });
+          setSelectedUser(user);
+        }, 300);
+      }
     } catch (err) {
       setSearchError(err.response?.data?.error || 'User not found');
     } finally {
@@ -52,6 +76,14 @@ export default function CityPage() {
 
   const handleBuildingClick = (user) => {
     setSelectedUser(user);
+    // Also fly to clicked building
+    if (user.gridPosition) {
+      setFlyToTarget({
+        x: user.gridPosition.x,
+        y: user.buildingConfig?.height / 2 || 5,
+        z: user.gridPosition.z,
+      });
+    }
   };
 
   return (
@@ -62,6 +94,7 @@ export default function CityPage() {
         onBuildingClick={handleBuildingClick}
         nightMode={nightMode}
         focusedUsername={selectedUser?.username || null}
+        flyToTarget={flyToTarget}
       />
 
       {/* Top HUD */}

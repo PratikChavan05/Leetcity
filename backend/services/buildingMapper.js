@@ -6,6 +6,52 @@ function clamp(value, min, max) {
 }
 
 /**
+ * Colony classification based on difficulty focus + contest activity.
+ * Users are grouped into named districts.
+ */
+export function classifyColony(userData) {
+    const { solvedStats, contestRating, contestsAttended } = userData;
+    const { total, easy, medium, hard } = solvedStats;
+    const totalSolved = easy + medium + hard || 1;
+
+    const hardRatio = hard / totalSolved;
+    const mediumRatio = medium / totalSolved;
+    const easyRatio = easy / totalSolved;
+
+    // Contest elites — high contest rating or many contests
+    if (contestRating >= 1800 || contestsAttended >= 20) {
+        return 'contest-elites';
+    }
+
+    // Hard grinders — dominant hard solving
+    if (hardRatio > 0.25 && hard >= 30) {
+        return 'hard-grinders';
+    }
+
+    // Speed runners — lots of total solves, focus on medium
+    if (total >= 300 && mediumRatio > 0.35) {
+        return 'speed-runners';
+    }
+
+    // Balanced warriors — roughly even distribution
+    if (hardRatio > 0.1 && mediumRatio > 0.25 && easyRatio > 0.25) {
+        return 'balanced-warriors';
+    }
+
+    // Easy builders — mostly easy problems
+    return 'easy-builders';
+}
+
+// Colony metadata (center offsets + accent colors)
+export const COLONY_CONFIG = {
+    'contest-elites': { center: { x: 0, z: 0 }, color: '#ffd700', label: '🏆 Contest Elites' },
+    'hard-grinders': { center: { x: 50, z: -50 }, color: '#e17055', label: '🔥 Hard Grinders' },
+    'speed-runners': { center: { x: -50, z: -50 }, color: '#74b9ff', label: '⚡ Speed Runners' },
+    'balanced-warriors': { center: { x: 50, z: 50 }, color: '#55efc4', label: '⚖️ Balanced Warriors' },
+    'easy-builders': { center: { x: -50, z: 50 }, color: '#a29bfe', label: '🌱 Easy Builders' },
+};
+
+/**
  * Pick a building color based on the user's dominant difficulty.
  */
 function pickColor(easy, medium, hard) {
@@ -94,5 +140,6 @@ export function mapToBuilding(userData) {
         windowsPerFloor,
         sideWindowsPerFloor,
         litPercentage,
+        colony: classifyColony(userData),
     };
 }

@@ -82,7 +82,7 @@ export default function Ground({ nightMode }) {
     <group>
       {/* Main ground plane */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]} receiveShadow>
-        <planeGeometry args={[200, 200]} />
+        <planeGeometry args={[400, 400]} />
         <meshStandardMaterial
           color={nightMode ? '#060610' : '#0e0e1e'}
           roughness={0.95}
@@ -92,7 +92,7 @@ export default function Ground({ nightMode }) {
 
       {/* Subtle grid */}
       <gridHelper
-        args={[200, 40, nightMode ? '#12122a' : '#1e1e3a', nightMode ? '#0a0a18' : '#141428']}
+        args={[400, 80, nightMode ? '#12122a' : '#1e1e3a', nightMode ? '#0a0a18' : '#141428']}
         position={[0, 0.01, 0]}
       />
 

@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema(
             windowsPerFloor: { type: Number, default: 3 },
             sideWindowsPerFloor: { type: Number, default: 2 },
             litPercentage: { type: Number, default: 0.3 },
+            colony: { type: String, default: 'easy-builders' },
         },
         gridPosition: {
             x: { type: Number, default: 0 },
